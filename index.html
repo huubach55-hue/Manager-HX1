@@ -6,6 +6,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <title>Bánh Chưng Bắc - Quản lý bán hàng</title>
+
+<!-- PWA: cho phép cài đặt như app độc lập -->
+<meta name="theme-color" content="#C2410C" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bánh Chưng Bắc">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
@@ -1228,5 +1239,14 @@ nav.bottomnav button.active .ic{transform:translateY(-1px) scale(1.08);}
   drawRevenueChart(currentChartPeriod);
 })();
 </script>
+
+<!-- PWA: đăng ký service worker để có thể cài đặt như app -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => console.error('Lỗi đăng ký service worker:', err));
+    });
+  }
+</script>
 </body>
-</html>
+  </html>
