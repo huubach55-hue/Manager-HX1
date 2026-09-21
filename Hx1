@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<script>(function(){try{if(localStorage.getItem('hxfood_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Bánh Chưng Bắc - Quản lý bán hàng</title>
+
+<!-- PWA: cho phép cài đặt như app độc lập -->
+<meta name="theme-color" content="#C2410C" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bánh Chưng Bắc">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+:root{
+  --bg:#F2F2F7;
+  --card-solid:#FFFFFF;
+  --text:#1C1C1E;
+  --text-soft:#8E8E93;
+  --sep:rgba(60,60,67,.22);
+  --sep-light:rgba(60,60,67,.13);
+  --primary:#C2410C;
+  --primary-dark:#9A3412;
+  --primary-rgb:194,65,12;
+  --blue:#007AFF; --blue-soft:rgba(0,122,255,.12);
+  --green:#34C759; --green-soft:rgba(52,199,89,.12);
+  --orange:#FF9500; --orange-soft:rgba(255,149,0,.13);
+  --red:#FF3B30; --red-soft:rgba(255,59,48,.12);
+  --gray:#8E8E93; --gray-soft:rgba(142,142,147,.14);
+  --glass-bg:rgba(255,255,255,.6);
+  --glass-bg-strong:rgba(255,255,255,.8);
+  --glass-border:rgba(255,255,255,.7);
+  --glass-highlight:rgba(255,255,255,.55);
+  --glass-shadow:0 6px 20px rgba(0,0,0,.07);
+  --nav-bg:rgba(255,255,255,.75);
+  --sheet-bg:rgba(255,255,255,.9);
+  --blob-opacity:.35;
+  --ease:cubic-bezier(.25,.9,.4,1);
+  --ease-spring:cubic-bezier(.34,1.5,.64,1);
+  --dir:1;
+}
+[data-theme="dark"]{
+  --bg:#000000;
+  --card-solid:#1C1C1E;
+  --text:#FFFFFF;
+  --text-soft:#98989D;
+  --sep:rgba(84,84,88,.65);
+  --sep-light:rgba(84,84,88,.4);
+  --primary:#FF7A33;
+  --primary-dark:#C2410C;
+  --primary-rgb:255,122,51;
+  --blue:#0A84FF; --blue-soft:rgba(10,132,255,.24);
+  --green:#30D158; --green-soft:rgba(48,209,88,.22);
+  --orange:#FF9F0A; --orange-soft:rgba(255,159,10,.22);
+  --red:#FF453A; --red-soft:rgba(255,69,58,.22);
+  --gray:#98989D; --gray-soft:rgba(142,142,147,.24);
+  --glass-bg:rgba(44,44,46,.55);
+  --glass-bg-strong:rgba(44,44,46,.75);
+  --glass-border:rgba(255,255,255,.12);
+  --glass-highlight:rgba(255,255,255,.09);
+  --glass-shadow:0 6px 20px rgba(0,0,0,.5);
+  --nav-bg:rgba(28,28,30,.75);
+  --sheet-bg:rgba(30,30,32,.9);
+  --blob-opacity:.2;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display','Segoe UI',Roboto,Arial,sans-serif;
+  background:var(--bg);color:var(--text);
+  padding-bottom:calc(104px + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling:touch;
+  transition:background .3s ease,color .3s ease;
+}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;}
+
+.bg-blobs{position:fixed;inset:0;z-index:-1;overflow:hidden;}
+.blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:var(--blob-opacity);will-change:transform;}
+.blob1{width:260px;height:260px;background:#FF8A50;top:-60px;left:-60px;animation:float1 30s ease-in-out infinite alternate;}
+.blob2{width:280px;height:280px;background:#FFB347;bottom:-70px;right:-50px;animation:float2 34s ease-in-out infinite alternate;}
+@keyframes float1{from{transform:translate(0,0);}to{transform:translate(30px,35px);}}
+@keyframes float2{from{transform:translate(0,0);}to{transform:translate(-30px,-20px);}}
+@media (prefers-reduced-motion:reduce){.blob{animation:none;}}
+
+/* ---------- Header: iOS 26 glass ---------- */
+header.appbar{
+  padding:14px 16px;position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--nav-bg);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  backdrop-filter:blur(24px) saturate(180%);
+  border-bottom:0.5px solid var(--sep);
+}
+header.appbar .brand{display:flex;align-items:center;gap:10px;}
+header.appbar .logo{
+  width:34px;height:34px;border-radius:11px;background:var(--primary);
+  display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;
+}
+header.appbar .brand h1{font-size:15.5px;font-weight:700;color:var(--text);}
+header.appbar .brand p{font-size:11px;color:var(--text-soft);margin-top:1px;font-weight:500;}
+.header-actions{display:flex;gap:8px;}
+header.appbar .icon-btn{
+  background:var(--glass-bg-strong);border:1px solid var(--glass-border);color:var(--text);
+  width:34px;height:34px;border-radius:11px;font-size:15px;display:flex;align-items:center;justify-content:center;
+  transition:transform .14s var(--ease-spring);
+}
+header.appbar .icon-btn:active{transform:scale(.88);}
+
+main{padding:12px 14px 0;max-width:520px;margin:0 auto;}
+.section{display:none;}
+.section.active{display:block;animation:sectionIn .32s var(--ease);}
+@keyframes sectionIn{from{opacity:0;transform:translateX(calc(14px * var(--dir)));}to{opacity:1;transform:none;}}
+@media (prefers-reduced-motion:reduce){.section.active{animation:none;}}
+
+.page-title{font-size:29px;font-weight:800;letter-spacing:.2px;padding:8px 4px 14px;color:var(--text);}
+
+/* ---------- Grouped form (Apple Settings style) ---------- */
+.ios-group{background:var(--card-solid);border-radius:20px;overflow:hidden;margin-bottom:10px;box-shadow:var(--glass-shadow);}
+.ios-row{display:flex;flex-direction:column;padding:11px 14px;border-bottom:0.5px solid var(--sep-light);transition:background .15s;}
+.ios-row:last-child{border-bottom:none;}
+.ios-row:focus-within{background:rgba(var(--primary-rgb),.06);}
+.ios-row label{font-size:12px;color:var(--text-soft);font-weight:600;margin-bottom:2px;}
+.ios-row input,.ios-row textarea{
+  border:none;background:transparent;padding:2px 0;font-size:16px;color:var(--text);font-family:inherit;width:100%;
+}
+.ios-row input:focus,.ios-row textarea:focus{outline:none;}
+.ios-row textarea{resize:none;font-size:15px;}
+.ios-row input::placeholder,.ios-row textarea::placeholder{color:#8E8E93;opacity:.6;}
+
+.section-title{font-size:12.5px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px;margin:14px 14px 7px;}
+.section-title:first-of-type{margin-top:0;}
+
+/* ---------- Glass cards ---------- */
+.card{
+  background:var(--glass-bg);border-radius:20px;padding:14px;margin-bottom:10px;
+  -webkit-backdrop-filter:blur(16px) saturate(160%);
+  backdrop-filter:blur(16px) saturate(160%);
+  border:1px solid var(--glass-border);
+  box-shadow:var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .card{background:var(--card-solid);}
+}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.card-head h3{font-size:14px;font-weight:700;}
+
+.notice-banner{
+  padding:12px 14px;border-radius:16px;margin-bottom:12px;font-size:13.5px;font-weight:600;
+  display:flex;align-items:center;gap:9px;
+  background:var(--orange-soft);color:#8a5300;
+}
+[data-theme="dark"] .notice-banner{color:#FFCC80;}
+.notice-banner.danger{background:var(--red-soft);color:#a3241c;}
+[data-theme="dark"] .notice-banner.danger{color:#FFB4AB;}
+.notice-banner.ok{background:var(--green-soft);color:#1c7a37;}
+[data-theme="dark"] .notice-banner.ok{color:#A8E6B8;}
+
+/* ---------- Stats: glass ---------- */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px;}
+.stat-card{
+  background:var(--glass-bg);border-radius:18px;padding:12px;
+  -webkit-backdrop-filter:blur(14px) saturate(160%);
+  backdrop-filter:blur(14px) saturate(160%);
+  border:1px solid var(--glass-border);
+  box-shadow:var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+  display:flex;flex-direction:column;gap:8px;
+}
+.stat-icon{width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.st-today .stat-icon{background:var(--orange-soft);}
+.st-overdue .stat-icon{background:var(--red-soft);}
+.st-ready .stat-icon{background:var(--green-soft);}
+.st-total .stat-icon{background:var(--blue-soft);}
+.stat-card .num{font-size:21px;font-weight:800;line-height:1;color:var(--text);}
+.stat-card .label{font-size:11px;color:var(--text-soft);font-weight:600;margin-top:2px;}
+
+.revenue-card{display:flex;align-items:center;justify-content:space-between;}
+.revenue-card .lb{font-size:12.5px;color:var(--text-soft);font-weight:600;}
+.revenue-card .lb small{display:block;font-size:10.5px;color:var(--text-soft);opacity:.7;margin-top:2px;font-weight:500;}
+.revenue-card .amount{font-size:21px;font-weight:800;color:var(--green);}
+
+/* ---------- Chart ---------- */
+#revenueChart{width:100%;height:150px;display:block;}
+
+/* ---------- Day chips (flat, cheap) ---------- */
+.day-scroll{display:flex;overflow-x:auto;gap:7px;padding-bottom:2px;}
+.day-chip{min-width:56px;text-align:center;border-radius:12px;padding:8px 6px;flex-shrink:0;background:var(--gray-soft);}
+.day-chip.has-orders{background:rgba(var(--primary-rgb),.14);}
+.day-chip .d{font-size:9.5px;color:var(--text-soft);font-weight:700;}
+.day-chip .n{font-size:15px;font-weight:800;color:var(--primary);margin-top:2px;}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:14px 16px;border:none;border-radius:16px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;
+  color:#fff;background:var(--primary);
+  transition:transform .14s var(--ease-spring),opacity .14s;
+}
+.btn:active{transform:scale(.97);opacity:.9;}
+.btn.secondary{
+  background:var(--glass-bg-strong);color:var(--text);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border:1px solid var(--glass-border);
+}
+.btn.block{width:100%;}
+.btn.small{padding:7px 12px;font-size:12.5px;border-radius:12px;}
+
+/* ---------- Order items: glass + perf optimization ---------- */
+.order-item{
+  border-radius:18px;padding:13px 14px;margin-bottom:8px;
+  background:var(--glass-bg);
+  -webkit-backdrop-filter:blur(12px) saturate(150%);
+  backdrop-filter:blur(12px) saturate(150%);
+  border:1px solid var(--glass-border);
+  box-shadow:var(--glass-shadow);
+  opacity:0;animation:itemIn .35s var(--ease) forwards;
+  content-visibility:auto;
+  contain-intrinsic-size:150px;
+}
+@keyframes itemIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+@media (prefers-reduced-motion:reduce){.order-item{animation:none;opacity:1;}}
+.order-item.today{box-shadow:var(--glass-shadow), inset 3px 0 0 var(--orange);}
+.order-item.overdue{box-shadow:var(--glass-shadow), inset 3px 0 0 var(--red);}
+.order-item.done{opacity:.55 !important;animation:none;}
+.order-item .row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.order-item .name{font-weight:700;font-size:15px;color:var(--text);}
+.order-item .code{font-size:10.5px;color:var(--text-soft);font-weight:600;margin-top:1px;letter-spacing:.3px;}
+.order-item .divider{border-top:0.5px solid var(--sep-light);margin:9px 0 8px;}
+.order-item .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px;}
+.order-item .meta-item{font-size:11.5px;color:var(--text-soft);}
+.order-item .meta-item b{color:var(--text);font-weight:600;display:block;font-size:12.5px;margin-top:1px;}
+.badge{font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
+.badge.new{background:var(--blue-soft);color:var(--blue);}
+.badge.prep{background:var(--orange-soft);color:var(--orange);}
+.badge.ready{background:var(--green-soft);color:var(--green);}
+.badge.done{background:var(--gray-soft);color:var(--gray);}
+.badge.cancel{background:var(--red-soft);color:var(--red);}
+.diff-tag{font-weight:700;}
+.right-top{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.more-btn{
+  background:var(--gray-soft);border:none;width:28px;height:28px;border-radius:9px;
+  font-size:13px;color:var(--text-soft);display:flex;align-items:center;justify-content:center;
+  transition:transform .14s var(--ease-spring);flex-shrink:0;
+}
+.more-btn:active{transform:scale(.88);}
+
+/* ---------- Search / filter ---------- */
+.searchbox{position:relative;margin-bottom:10px;}
+.searchbox input{
+  width:100%;padding:11px 12px 11px 36px;border:none;border-radius:14px;font-size:15px;
+  background:var(--glass-bg);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  border:1px solid var(--glass-border);
+  font-family:inherit;color:var(--text);
+}
+.searchbox input:focus{outline:none;}
+.searchbox input::placeholder{color:var(--text-soft);}
+.searchbox .sic{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.55;}
+.pill-row{display:flex;overflow-x:auto;gap:7px;margin-bottom:12px;padding-bottom:2px;}
+.pill{
+  flex-shrink:0;padding:7px 13px;border-radius:16px;font-size:12.5px;font-weight:600;color:var(--text-soft);white-space:nowrap;
+  background:var(--gray-soft);border:none;
+  transition:transform .14s var(--ease-spring),background .18s,color .18s;
+}
+.pill:active{transform:scale(.93);}
+.pill.active{background:var(--primary);color:#fff;}
+
+/* ---------- Scan ---------- */
+#reader{width:100%;max-width:280px;margin:0 auto;border-radius:16px;overflow:hidden;}
+.scan-hint{font-size:11.5px;color:var(--text-soft);margin-top:9px;text-align:center;line-height:1.5;}
+.code-input-group{
+  display:flex;align-items:center;gap:6px;
+  background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:14px;padding:2px 6px 2px 14px;
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+}
+.code-ic{font-size:14px;opacity:.55;}
+.code-input{
+  flex:1;border:none !important;background:transparent !important;padding:11px 4px !important;
+  font-family:ui-monospace,monospace;font-size:15px;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--text);
+}
+.code-input:focus{outline:none;}
+.code-clear{
+  border:none;background:rgba(120,120,128,.2);color:var(--text-soft);
+  width:24px;height:24px;min-width:24px;border-radius:50%;font-size:14px;line-height:1;
+  display:none;align-items:center;justify-content:center;
+}
+.code-clear.show{display:flex;}
+.recent-chip{
+  flex-shrink:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+  background:var(--card-solid);border-radius:13px;padding:9px 12px;min-width:108px;max-width:140px;text-align:left;
+  box-shadow:0 1px 3px rgba(0,0,0,.05);
+  transition:transform .14s var(--ease-spring);font-family:inherit;
+}
+.recent-chip:active{transform:scale(.94);}
+.rc-name{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:118px;}
+.rc-code{font-size:10.5px;font-weight:700;color:var(--primary);letter-spacing:.4px;font-family:ui-monospace,monospace;}
+
+/* ---------- Floating pill tab bar (iOS 26 signature) ---------- */
+nav.bottomnav{
+  position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));
+  display:flex;border-radius:30px;z-index:20;padding:6px;
+  background:var(--nav-bg);
+  -webkit-backdrop-filter:blur(26px) saturate(180%);
+  backdrop-filter:blur(26px) saturate(180%);
+  border:1px solid var(--glass-border);
+  box-shadow:0 10px 30px rgba(0,0,0,.18), inset 0 1px 0 var(--glass-highlight);
+}
+.nav-indicator{
+  position:absolute;top:6px;height:calc(100% - 12px);border-radius:22px;
+  background:rgba(var(--primary-rgb),.16);
+  transition:transform .4s var(--ease-spring),width .4s var(--ease-spring);
+}
+nav.bottomnav button{
+  flex:1;background:none;border:none;padding:10px 2px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--text-soft);font-family:inherit;position:relative;z-index:1;transition:color .25s,transform .25s var(--ease-spring);
+}
+nav.bottomnav .ic{font-size:19px;transition:transform .25s var(--ease-spring);}
+nav.bottomnav .lb{font-size:10px;font-weight:600;}
+nav.bottomnav button.active{color:var(--primary);}
+nav.bottomnav button.active .ic{transform:translateY(-1px) scale(1.08);}
+
+/* ---------- Modal overlays ---------- */
+.modal-overlay{
+  position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;
+  background:rgba(0,0,0,.45);opacity:0;visibility:hidden;
+  transition:opacity .25s ease,visibility .25s ease;
+}
+.modal-overlay.active{opacity:1;visibility:visible;}
+.modal-overlay.sheet{align-items:flex-end;padding:0;}
+.modal-close{position:absolute;top:9px;right:11px;font-size:21px;background:rgba(120,120,128,.18);border:none;color:var(--text-soft);
+  width:28px;height:28px;border-radius:50%;line-height:1;}
+
+.ios-sheet{
+  background:var(--sheet-bg);width:100%;max-width:480px;
+  -webkit-backdrop-filter:blur(30px) saturate(180%);
+  backdrop-filter:blur(30px) saturate(180%);
+  border-radius:28px 28px 0 0;padding:8px 16px calc(18px + env(safe-area-inset-bottom));
+  transform:translateY(24px);opacity:0;transition:transform .32s var(--ease-spring),opacity .25s ease;
+  box-shadow:0 -6px 24px rgba(0,0,0,.16);
+}
+.modal-overlay.active .ios-sheet{transform:translateY(0);opacity:1;}
+.sheet-handle{width:36px;height:5px;background:rgba(120,120,128,.4);border-radius:3px;margin:6px auto 14px;}
+.sheet-group{background:var(--card-solid);border-radius:14px;overflow:hidden;margin-bottom:8px;}
+.sheet-row{
+  width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;
+  font-size:16.5px;border-bottom:0.5px solid var(--sep-light);background:var(--card-solid);border:none;
+  font-family:inherit;color:var(--text);transition:background .12s;
+}
+.sheet-row:last-child{border-bottom:none;}
+.sheet-row:active{background:var(--gray-soft);}
+.sheet-row.centered{justify-content:center;font-weight:500;}
+.sheet-row.action-blue{color:var(--blue);}
+.sheet-row.destructive{color:var(--red);}
+.sheet-cancel{
+  width:100%;background:var(--card-solid);border:none;border-radius:14px;padding:15px;
+  font-size:16.5px;font-weight:700;color:var(--blue);margin-top:2px;font-family:inherit;
+}
+.sheet-cancel:active{background:var(--gray-soft);}
+.sheet-info{text-align:center;padding:2px 0 12px;}
+.sheet-info .n{font-weight:700;font-size:14.5px;color:var(--text);}
+.sheet-info .c{font-size:11.5px;color:var(--text-soft);font-family:ui-monospace,monospace;margin-top:2px;letter-spacing:.4px;}
+
+.mini-hint{font-size:12px;color:var(--text-soft);margin-bottom:14px;line-height:1.5;text-align:center;}
+.mini-title{font-size:16px;font-weight:700;text-align:center;margin-bottom:4px;color:var(--text);}
+
+/* ---------- Invoice: always light (paper look), independent of theme ---------- */
+.invoice{
+  background:#fff;border-radius:22px;padding:20px;width:280px;position:relative;
+  box-shadow:0 20px 50px rgba(0,0,0,.3);color:#1C1C1E;
+  transform:scale(.9);opacity:0;transition:transform .3s var(--ease-spring),opacity .22s ease;
+}
+.modal-overlay.active .invoice{transform:scale(1);opacity:1;}
+.inv-head{text-align:center;margin-bottom:12px;}
+.inv-head .shop{font-size:17.5px;font-weight:800;color:#9A3412;letter-spacing:.3px;}
+.inv-head .phone{font-size:11.5px;color:#8E8E93;margin-top:2px;font-weight:700;}
+.inv-head .sub{font-size:10.5px;color:#8E8E93;margin-top:7px;letter-spacing:1.2px;font-weight:800;}
+.inv-code-box{text-align:center;background:#FBE7D8;border-radius:12px;padding:9px;margin-bottom:11px;}
+.inv-code-box .lb{font-size:9.5px;color:#9A3412;font-weight:800;letter-spacing:.7px;}
+.inv-code-box .val{font-size:19px;font-weight:800;color:#9A3412;letter-spacing:1px;font-family:ui-monospace,monospace;}
+.inv-row{display:flex;justify-content:space-between;gap:10px;padding:5.5px 0;border-bottom:0.5px dashed #ddd0bd;font-size:12px;}
+.inv-row:last-child{border-bottom:none;}
+.inv-row .k{color:#8E8E93;font-weight:600;flex-shrink:0;}
+.inv-row .v{font-weight:800;text-align:right;color:#1C1C1E;}
+.qr-wrap{text-align:center;margin:14px 0 6px;}
+.inv-footer{text-align:center;font-size:9.5px;color:#b0a08e;margin-top:6px;font-weight:700;}
+.invoice-actions{display:flex;gap:8px;margin-top:15px;}
+
+.empty{text-align:center;color:var(--text-soft);padding:24px 10px;font-size:13px;}
+.empty .eic{font-size:26px;display:block;margin-bottom:6px;}
+
+/* ---------- PRINT: 1 trang duy nhất, luôn sáng rõ bất kể theme ---------- */
+@media print{
+  @page{ size: 74mm auto; margin: 0; }
+  html, body{ margin:0 !important; padding:0 !important; background:#fff !important; }
+  header.appbar, main, nav.bottomnav, #backupModal, #actionSheet{ display:none !important; }
+  #invoiceModal{
+    position:static !important; inset:auto !important; display:block !important;
+    opacity:1 !important; visibility:visible !important;
+    background:#fff !important; padding:0 !important; margin:0 !important; width:100% !important;
+  }
+  .invoice{
+    width:100% !important; max-width:100% !important; margin:0 !important;
+    border-radius:0 !important; box-shadow:none !important;
+    padding:3mm !important; transform:none !important; opacity:1 !important;
+  }
+  .invoice, .invoice *{ color:#1C1C1E !important; }
+  .inv-head .shop{font-size:15px;color:#9A3412 !important;}
+  .inv-head .phone,.inv-head .sub,.inv-row .k{color:#8E8E93 !important;}
+  .inv-code-box{background:#FBE7D8 !important;}
+  .inv-code-box .lb,.inv-code-box .val{color:#9A3412 !important;}
+  .inv-code-box .val{font-size:16px;}
+  .inv-row{font-size:10.5px;}
+  .modal-close, .invoice-actions{ display:none !important; }
+}
+</style>
+</head>
+<body>
+<div class="bg-blobs" aria-hidden="true"><span class="blob blob1"></span><span class="blob blob2"></span></div>
+
+<div id="app">
+  <header class="appbar">
+    <div class="brand">
+      <div class="logo">🥟</div>
+      <div>
+        <h1>Bánh Chưng Bắc</h1>
+        <p>Quản lý đơn hàng</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="themeToggleBtn">🌙</button>
+      <button class="icon-btn" id="backupIconBtn">💾</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="dashboard" class="section active">
+      <div class="page-title">Trang chủ</div>
+      <div id="dashboardNotices"></div>
+
+      <div class="stat-grid">
+        <div class="stat-card st-today"><div class="stat-icon">🔥</div><div><div class="num" id="statToday">0</div><div class="label">Lấy hôm nay</div></div></div>
+        <div class="stat-card st-overdue"><div class="stat-icon">⚠️</div><div><div class="num" id="statOverdue">0</div><div class="label">Quá hạn</div></div></div>
+        <div class="stat-card st-ready"><div class="stat-icon">✅</div><div><div class="num" id="statReady">0</div><div class="label">Sẵn sàng</div></div></div>
+        <div class="stat-card st-total"><div class="stat-icon">📦</div><div><div class="num" id="statTotal">0</div><div class="label">Đang xử lý</div></div></div>
+      </div>
+
+      <div class="card revenue-card">
+        <div class="lb">💰 Doanh thu<small>Tổng đơn đã giao</small></div>
+        <div class="amount" id="statRevenue">0đ</div>
+      </div>
+
+      <div class="section-title">Thống kê doanh thu</div>
+      <div class="card">
+        <div class="pill-row" id="chartPeriodPills" style="margin-bottom:10px;">
+          <button class="pill active" data-period="day">7 ngày</button>
+          <button class="pill" data-period="week">4 tuần</button>
+          <button class="pill" data-period="month">6 tháng</button>
+        </div>
+        <canvas id="revenueChart"></canvas>
+        <div id="chartEmpty" class="empty" style="display:none;padding:16px;">📊 Chưa có doanh thu để thống kê</div>
+      </div>
+
+      <div class="section-title">Khách lấy bánh hôm nay</div>
+      <div id="todayList"></div>
+
+      <div class="section-title">7 ngày tới</div>
+      <div class="card">
+        <div class="day-scroll" id="weekScroll"></div>
+      </div>
+    </section>
+
+    <section id="new-order" class="section">
+      <div class="page-title">Tạo đơn</div>
+      <form id="orderForm"></form>
+
+      <div class="section-title">Khách hàng</div>
+      <div class="ios-group">
+        <div class="ios-row">
+          <label for="custName">Tên khách hàng</label>
+          <input type="text" id="custName" placeholder="Nhập tên khách" required form="orderForm">
+        </div>
+        <div class="ios-row">
+          <label for="custPhone">Số điện thoại</label>
+          <input type="tel" id="custPhone" placeholder="Nhập số điện thoại" required form="orderForm">
+        </div>
+      </div>
+
+      <div class="section-title">Thời gian</div>
+      <div class="ios-group">
+        <div class="ios-row">
+          <label for="orderDate">Ngày đặt</label>
+          <input type="date" id="orderDate" required form="orderForm">
+        </div>
+        <div class="ios-row">
+          <label for="pickupDate">Ngày lấy</label>
+          <input type="date" id="pickupDate" required form="orderForm">
+        </div>
+      </div>
+
+      <div class="section-title">Chi tiết đơn hàng</div>
+      <div class="ios-group">
+        <div class="ios-row">
+          <label for="productInfo">Sản phẩm / Số lượng</label>
+          <input type="text" id="productInfo" placeholder="VD: Bánh kem 1kg, socola" form="orderForm">
+        </div>
+        <div class="ios-row">
+          <label for="price">Giá tiền (đ)</label>
+          <input type="text" inputmode="numeric" id="price" placeholder="0" form="orderForm">
+        </div>
+        <div class="ios-row">
+          <label for="note">Ghi chú</label>
+          <textarea id="note" rows="2" placeholder="VD: Ghi chữ Happy Birthday" form="orderForm"></textarea>
+        </div>
+      </div>
+
+      <button type="submit" form="orderForm" class="btn block" style="margin-top:4px;">Tạo đơn & Xuất hóa đơn</button>
+    </section>
+
+    <section id="order-list" class="section">
+      <div class="page-title">Đơn hàng</div>
+      <div class="searchbox">
+        <span class="sic">🔎</span>
+        <input type="text" id="searchBox" placeholder="Tìm tên, SĐT, mã đơn...">
+      </div>
+      <div class="pill-row" id="statusPills">
+        <button class="pill active" data-status="all">Tất cả</button>
+        <button class="pill" data-status="Mới đặt">Mới đặt</button>
+        <button class="pill" data-status="Đang chuẩn bị">Đang chuẩn bị</button>
+        <button class="pill" data-status="Sẵn sàng">Sẵn sàng</button>
+        <button class="pill" data-status="Đã giao">Đã giao</button>
+        <button class="pill" data-status="Đã hủy">Đã hủy</button>
+      </div>
+      <div id="orderListContainer"></div>
+    </section>
+
+    <section id="scan" class="section">
+      <div class="page-title">Quét mã</div>
+      <div class="card" style="text-align:center;">
+        <div class="card-head" style="justify-content:center;"><h3>🔍 Quét mã QR đơn hàng</h3></div>
+        <div id="reader"></div>
+        <button class="btn" id="toggleScanBtn" style="margin-top:12px;">Bắt đầu quét</button>
+
+        <div class="section-title" style="margin:20px 0 8px;text-align:left;">Nhập mã đơn thủ công</div>
+        <div class="code-input-group">
+          <span class="code-ic">🔎</span>
+          <input type="text" id="manualCode" class="code-input" placeholder="HX384720" maxlength="10">
+          <button type="button" class="code-clear" id="clearCodeBtn">×</button>
+        </div>
+        <button class="btn block" id="manualLookupBtn" style="margin-top:10px;">Tra cứu đơn hàng</button>
+        <p class="scan-hint">Cần cấp quyền camera. Nếu không quét được, nhập mã đơn thủ công ở trên.</p>
+
+        <div class="section-title" style="margin:20px 0 8px;text-align:left;">Đơn gần đây</div>
+        <div class="day-scroll" id="recentOrdersScroll"></div>
+      </div>
+      <div id="scanResultCard"></div>
+    </section>
+  </main>
+
+  <nav class="bottomnav" id="bottomNav">
+    <div class="nav-indicator" id="navIndicator"></div>
+    <button class="nav-btn active" data-tab="dashboard"><span class="ic">🏠</span><span class="lb">Trang chủ</span></button>
+    <button class="nav-btn" data-tab="new-order"><span class="ic">➕</span><span class="lb">Tạo đơn</span></button>
+    <button class="nav-btn" data-tab="order-list"><span class="ic">📋</span><span class="lb">Đơn hàng</span></button>
+    <button class="nav-btn" data-tab="scan"><span class="ic">🔍</span><span class="lb">Quét mã</span></button>
+  </nav>
+
+  <div class="modal-overlay" id="invoiceModal">
+    <div class="invoice" id="invoiceContent">
+      <button class="modal-close" id="closeInvoiceBtn">×</button>
+      <div class="inv-head">
+        <div class="shop">BÁNH CHƯNG BẮC</div>
+        <div class="phone">📞 0377060939</div>
+        <div class="sub">HÓA ĐƠN ĐẶT BÁNH</div>
+      </div>
+      <div class="inv-code-box">
+        <div class="lb">MÃ ĐƠN HÀNG</div>
+        <div class="val" id="invId">-</div>
+      </div>
+      <div class="inv-row"><span class="k">Khách hàng</span><span class="v" id="invName">-</span></div>
+      <div class="inv-row"><span class="k">Số điện thoại</span><span class="v" id="invPhone">-</span></div>
+      <div class="inv-row"><span class="k">Ngày đặt</span><span class="v" id="invOrderDate">-</span></div>
+      <div class="inv-row"><span class="k">Ngày lấy</span><span class="v" id="invPickupDate">-</span></div>
+      <div class="inv-row"><span class="k">Sản phẩm</span><span class="v" id="invProduct">-</span></div>
+      <div class="inv-row"><span class="k">Giá tiền</span><span class="v" id="invPrice">-</span></div>
+      <div class="inv-row"><span class="k">Ghi chú</span><span class="v" id="invNote">-</span></div>
+      <div class="inv-row"><span class="k">Trạng thái</span><span class="v" id="invStatus">-</span></div>
+      <div class="qr-wrap" id="qrcode"></div>
+      <div class="inv-footer">Quét mã này khi giao bánh cho khách</div>
+      <div class="invoice-actions">
+        <button class="btn block" id="printInvoiceBtn">🖨️ In hóa đơn</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay sheet" id="backupModal">
+    <div class="ios-sheet">
+      <div class="sheet-handle"></div>
+      <div class="mini-title">💾 Sao lưu dữ liệu</div>
+      <p class="mini-hint">Dữ liệu chỉ lưu trên trình duyệt này. Nên xuất file sao lưu định kỳ để tránh mất đơn khi xóa cache.</p>
+      <button class="btn block" id="exportBtn">⬇️ Xuất file sao lưu</button>
+      <button class="btn secondary block" id="importBtn" style="margin-top:8px;">⬆️ Khôi phục từ file</button>
+      <button type="button" class="sheet-cancel" id="closeBackupBtn" style="margin-top:8px;">Đóng</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;">
+    </div>
+  </div>
+
+  <div class="modal-overlay sheet" id="actionSheet">
+    <div class="ios-sheet">
+      <div class="sheet-handle"></div>
+      <div id="actionSheetBody"></div>
+      <button type="button" class="sheet-cancel" id="cancelActionSheetBtn">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'hxfood_orders';
+  const STATUS = ['Mới đặt','Đang chuẩn bị','Sẵn sàng','Đã giao','Đã hủy'];
+  const STATUS_CLASS = {'Mới đặt':'new','Đang chuẩn bị':'prep','Sẵn sàng':'ready','Đã giao':'done','Đã hủy':'cancel'};
+  const TAB_ORDER = ['dashboard','new-order','order-list','scan'];
+
+  let orders = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  let html5QrCode = null;
+  let scanning = false;
+  let currentStatusFilter = 'all';
+  let currentChartPeriod = 'day';
+
+  function saveOrders(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(orders)); }
+
+  function generateOrderCode(){
+    let code, attempts = 0;
+    do{
+      const n = Math.floor(Math.random()*1000000);
+      code = 'HX' + String(n).padStart(6,'0');
+      attempts++;
+    } while(orders.some(o=>o.id === code) && attempts < 50);
+    return code;
+  }
+
+  function toLocalISO(d){
+    const local = new Date(d.getTime() - d.getTimezoneOffset()*60000);
+    return local.toISOString().slice(0,10);
+  }
+  function todayStr(){ return toLocalISO(new Date()); }
+  function fmtDate(s){
+    if(!s) return '-';
+    const [y,m,d] = s.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  function fmtMoney(n){
+    if(!n) return '0đ';
+    return Number(n).toLocaleString('vi-VN') + 'đ';
+  }
+  function daysDiff(dateStr){
+    const d1 = new Date(dateStr + 'T00:00:00');
+    const d2 = new Date(todayStr() + 'T00:00:00');
+    return Math.round((d1 - d2) / (1000*60*60*24));
+  }
+
+  // ---------- DARK MODE ----------
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  function applyThemeIcon(){
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    themeToggleBtn.textContent = isDark ? '☀️' : '🌙';
+  }
+  themeToggleBtn.addEventListener('click', ()=>{
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('hxfood_theme','light');
+    } else {
+      document.documentElement.setAttribute('data-theme','dark');
+      localStorage.setItem('hxfood_theme','dark');
+    }
+    applyThemeIcon();
+    if(document.getElementById('dashboard').classList.contains('active')) drawRevenueChart(currentChartPeriod);
+  });
+  applyThemeIcon();
+
+  // ---------- GIÁ TIỀN TỰ CHÈN DẤU CHẤM ----------
+  const priceInput = document.getElementById('price');
+  priceInput.addEventListener('input', function(){
+    let raw = priceInput.value.replace(/\D/g,'');
+    priceInput.value = raw ? Number(raw).toLocaleString('vi-VN') : '';
+  });
+  function getRawPrice(){ return priceInput.value.replace(/\D/g,''); }
+
+  // ---------- TAB NAV + INDICATOR + SLIDE DIRECTION ----------
+  const navIndicator = document.getElementById('navIndicator');
+  function moveIndicator(btn){
+    if(!btn) return;
+    const nav = btn.parentElement;
+    const navRect = nav.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    navIndicator.style.width = (btnRect.width - 8) + 'px';
+    navIndicator.style.transform = `translateX(${btnRect.left - navRect.left + 4}px)`;
+  }
+  document.querySelectorAll('.nav-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const oldIdx = TAB_ORDER.indexOf(document.querySelector('.section.active').id);
+      const newIdx = TAB_ORDER.indexOf(btn.dataset.tab);
+      document.documentElement.style.setProperty('--dir', newIdx >= oldIdx ? 1 : -1);
+
+      document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+      moveIndicator(btn);
+      window.scrollTo(0,0);
+      if(btn.dataset.tab === 'order-list') renderOrderList();
+      if(btn.dataset.tab === 'dashboard'){ renderDashboard(); drawRevenueChart(currentChartPeriod); }
+      if(btn.dataset.tab === 'scan') renderRecentChips();
+    });
+  });
+  window.addEventListener('resize', ()=>{
+    moveIndicator(document.querySelector('.nav-btn.active'));
+    if(document.getElementById('dashboard').classList.contains('active')) drawRevenueChart(currentChartPeriod);
+  });
+  window.addEventListener('load', ()=> moveIndicator(document.querySelector('.nav-btn.active')));
+  requestAnimationFrame(()=> moveIndicator(document.querySelector('.nav-btn.active')));
+
+  document.getElementById('orderDate').value = todayStr();
+  document.getElementById('pickupDate').min = todayStr();
+
+  // ---------- BACKDROP CLICK ĐÓNG MODAL ----------
+  function bindBackdropClose(overlayId){
+    const el = document.getElementById(overlayId);
+    el.addEventListener('click', (e)=>{ if(e.target === el) el.classList.remove('active'); });
+  }
+  ['invoiceModal','backupModal','actionSheet'].forEach(bindBackdropClose);
+
+  // ---------- SHEET SAO LƯU ----------
+  document.getElementById('backupIconBtn').addEventListener('click', ()=> document.getElementById('backupModal').classList.add('active'));
+  document.getElementById('closeBackupBtn').addEventListener('click', ()=> document.getElementById('backupModal').classList.remove('active'));
+
+  // ---------- TẠO ĐƠN ----------
+  document.getElementById('orderForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const order = {
+      id: generateOrderCode(),
+      name: document.getElementById('custName').value.trim(),
+      phone: document.getElementById('custPhone').value.trim(),
+      orderDate: document.getElementById('orderDate').value,
+      pickupDate: document.getElementById('pickupDate').value,
+      product: document.getElementById('productInfo').value.trim(),
+      price: getRawPrice(),
+      note: document.getElementById('note').value.trim(),
+      status: 'Mới đặt',
+      createdAt: Date.now()
+    };
+    orders.push(order);
+    saveOrders();
+    e.target.reset();
+    document.getElementById('orderDate').value = todayStr();
+    showInvoice(order);
+    renderDashboard();
+  });
+
+  // ---------- HÓA ĐƠN ----------
+  function showInvoice(order){
+    document.getElementById('invId').textContent = order.id;
+    document.getElementById('invName').textContent = order.name;
+    document.getElementById('invPhone').textContent = order.phone;
+    document.getElementById('invOrderDate').textContent = fmtDate(order.orderDate);
+    document.getElementById('invPickupDate').textContent = fmtDate(order.pickupDate);
+    document.getElementById('invProduct').textContent = order.product || '-';
+    document.getElementById('invPrice').textContent = fmtMoney(order.price);
+    document.getElementById('invNote').textContent = order.note || 'Không có';
+    document.getElementById('invStatus').textContent = order.status;
+    const qrDiv = document.getElementById('qrcode');
+    qrDiv.innerHTML = '';
+    new QRCode(qrDiv, { text: order.id, width: 110, height: 110, correctLevel: QRCode.CorrectLevel.H });
+    document.getElementById('invoiceModal').classList.add('active');
+  }
+  document.getElementById('closeInvoiceBtn').addEventListener('click', ()=>{
+    document.getElementById('invoiceModal').classList.remove('active');
+  });
+  document.getElementById('printInvoiceBtn').addEventListener('click', ()=> window.print());
+
+  // ---------- ACTION SHEET CHO TỪNG ĐƠN ----------
+  function openActionSheet(order){
+    const body = document.getElementById('actionSheetBody');
+    body.innerHTML = '';
+
+    const info = document.createElement('div');
+    info.className = 'sheet-info';
+    info.innerHTML = `<div class="n">${order.name}</div><div class="c">#${order.id}</div>`;
+    body.appendChild(info);
+
+    const statusGroup = document.createElement('div');
+    statusGroup.className = 'sheet-group';
+    STATUS.forEach(s=>{
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'sheet-row';
+      row.innerHTML = `<span>${s}</span>${s===order.status ? '<span style="color:var(--primary);font-weight:700;">✓</span>' : ''}`;
+      row.addEventListener('click', ()=>{
+        order.status = s;
+        saveOrders();
+        renderDashboard();
+        renderOrderList();
+        document.getElementById('actionSheet').classList.remove('active');
+      });
+      statusGroup.appendChild(row);
+    });
+    body.appendChild(statusGroup);
+
+    const actionGroup = document.createElement('div');
+    actionGroup.className = 'sheet-group';
+
+    const printRow = document.createElement('button');
+    printRow.type = 'button';
+    printRow.className = 'sheet-row centered action-blue';
+    printRow.textContent = '🖨️ In hóa đơn';
+    printRow.addEventListener('click', ()=>{
+      document.getElementById('actionSheet').classList.remove('active');
+      showInvoice(order);
+    });
+    actionGroup.appendChild(printRow);
+
+    const delRow = document.createElement('button');
+    delRow.type = 'button';
+    delRow.className = 'sheet-row centered destructive';
+    delRow.textContent = '🗑️ Xóa đơn hàng';
+    delRow.addEventListener('click', ()=>{
+      document.getElementById('actionSheet').classList.remove('active');
+      if(confirm('Xóa đơn ' + order.id + '?')){
+        orders = orders.filter(x=>x.id !== order.id);
+        saveOrders();
+        renderDashboard();
+        renderOrderList();
+      }
+    });
+    actionGroup.appendChild(delRow);
+    body.appendChild(actionGroup);
+
+    document.getElementById('actionSheet').classList.add('active');
+  }
+  document.getElementById('cancelActionSheetBtn').addEventListener('click', ()=>{
+    document.getElementById('actionSheet').classList.remove('active');
+  });
+
+  // ---------- BIỂU ĐỒ DOANH THU ----------
+  function getPeriodData(period){
+    const delivered = orders.filter(o=>o.status==='Đã giao' && o.pickupDate);
+    const labels = [], values = [];
+    if(period === 'day'){
+      for(let i=6;i>=0;i--){
+        const d = new Date(); d.setDate(d.getDate()-i);
+        const key = toLocalISO(d);
+        const sum = delivered.filter(o=>o.pickupDate===key).reduce((s,o)=>s+(Number(o.price)||0),0);
+        labels.push(fmtDate(key).slice(0,5));
+        values.push(sum);
+      }
+    } else if(period === 'week'){
+      for(let i=3;i>=0;i--){
+        const ref = new Date(); ref.setDate(ref.getDate() - i*7);
+        const day = ref.getDay();
+        const diffToMon = (day===0 ? -6 : 1-day);
+        const monday = new Date(ref); monday.setDate(ref.getDate()+diffToMon);
+        const sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
+        const mKey = toLocalISO(monday), sKey = toLocalISO(sunday);
+        const sum = delivered.filter(o=>o.pickupDate>=mKey && o.pickupDate<=sKey).reduce((s,o)=>s+(Number(o.price)||0),0);
+        labels.push(`${monday.getDate()}/${monday.getMonth()+1}`);
+        values.push(sum);
+      }
+    } else {
+      for(let i=5;i>=0;i--){
+        const ref = new Date(); ref.setMonth(ref.getMonth()-i);
+        const prefix = `${ref.getFullYear()}-${String(ref.getMonth()+1).padStart(2,'0')}`;
+        const sum = delivered.filter(o=>o.pickupDate.startsWith(prefix)).reduce((s,o)=>s+(Number(o.price)||0),0);
+        labels.push('T'+(ref.getMonth()+1));
+        values.push(sum);
+      }
+    }
+    return {labels, values};
+  }
+
+  function roundRectPath(ctx,x,y,w,h,r){
+    r = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  function drawRevenueChart(period){
+    const canvas = document.getElementById('revenueChart');
+    const emptyEl = document.getElementById('chartEmpty');
+    const {labels, values} = getPeriodData(period);
+    const maxVal = Math.max(...values, 0);
+
+    if(maxVal === 0){
+      canvas.style.display = 'none';
+      emptyEl.style.display = 'block';
+      return;
+    }
+    canvas.style.display = 'block';
+    emptyEl.style.display = 'none';
+
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const w = rect.width || 280, h = 150;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    canvas.style.height = h + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,w,h);
+
+    const cs = getComputedStyle(document.documentElement);
+    const textSoft = cs.getPropertyValue('--text-soft').trim() || '#8E8E93';
+    const primary = cs.getPropertyValue('--primary').trim() || '#C2410C';
+    const primaryDark = cs.getPropertyValue('--primary-dark').trim() || '#9A3412';
+    const grayTrack = cs.getPropertyValue('--gray-soft').trim() || 'rgba(142,142,147,.2)';
+
+    const padTop = 24, padBottom = 20;
+    const chartH = h - padTop - padBottom;
+    const n = values.length;
+    const gap = 10;
+    const barW = Math.max(14, (w - gap*(n+1)) / n);
+
+    values.forEach((v,i)=>{
+      const barH = maxVal > 0 ? (v/maxVal) * chartH : 0;
+      const x = gap + i * (barW + gap);
+      const drawH = Math.max(barH, 3);
+      const drawY = padTop + (chartH - drawH);
+
+      if(v > 0){
+        const grad = ctx.createLinearGradient(0, drawY, 0, drawY+drawH);
+        grad.addColorStop(0, primary);
+        grad.addColorStop(1, primaryDark);
+        ctx.fillStyle = grad;
+      } else {
+        ctx.fillStyle = grayTrack;
+      }
+      roundRectPath(ctx, x, drawY, barW, drawH, 7);
+      ctx.fill();
+
+      if(v > 0){
+        ctx.fillStyle = textSoft;
+        ctx.font = '600 10px -apple-system,sans-serif';
+        ctx.textAlign = 'center';
+        const label = v >= 1000000 ? (v/1000000).toFixed(1)+'tr' : v >= 1000 ? Math.round(v/1000)+'k' : String(v);
+        ctx.fillText(label, x + barW/2, Math.max(drawY - 6, 12));
+      }
+
+      ctx.fillStyle = textSoft;
+      ctx.font = '600 10px -apple-system,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(labels[i], x + barW/2, h - 5);
+    });
+  }
+
+  document.querySelectorAll('#chartPeriodPills .pill').forEach(pill=>{
+    pill.addEventListener('click', ()=>{
+      document.querySelectorAll('#chartPeriodPills .pill').forEach(p=>p.classList.remove('active'));
+      pill.classList.add('active');
+      currentChartPeriod = pill.dataset.period;
+      drawRevenueChart(currentChartPeriod);
+    });
+  });
+
+  // ---------- DASHBOARD ----------
+  function renderDashboard(){
+    const today = todayStr();
+    const active = orders.filter(o=> o.status !== 'Đã giao' && o.status !== 'Đã hủy');
+    const todayOrders = active.filter(o=> o.pickupDate === today);
+    const overdueOrders = active.filter(o=> o.pickupDate < today);
+    const readyOrders = active.filter(o=> o.status === 'Sẵn sàng');
+    const revenue = orders.filter(o=> o.status === 'Đã giao').reduce((s,o)=> s + (Number(o.price)||0), 0);
+
+    document.getElementById('statToday').textContent = todayOrders.length;
+    document.getElementById('statOverdue').textContent = overdueOrders.length;
+    document.getElementById('statReady').textContent = readyOrders.length;
+    document.getElementById('statTotal').textContent = active.length;
+    document.getElementById('statRevenue').textContent = fmtMoney(revenue);
+
+    const notices = document.getElementById('dashboardNotices');
+    notices.innerHTML = '';
+    if(todayOrders.length > 0 || overdueOrders.length > 0){
+      let parts = [];
+      if(todayOrders.length>0) parts.push(`<b>${todayOrders.length}</b> khách lấy hôm nay`);
+      if(overdueOrders.length>0) parts.push(`<b>${overdueOrders.length}</b> đơn quá hạn`);
+      const cls = overdueOrders.length>0 ? 'danger' : '';
+      notices.innerHTML = `<div class="notice-banner ${cls}"><span>🔔</span><span>${parts.join(' • ')}</span></div>`;
+    } else {
+      notices.innerHTML = `<div class="notice-banner ok"><span>✅</span><span>Không có đơn nào cần xử lý gấp hôm nay</span></div>`;
+    }
+
+    const todayList = document.getElementById('todayList');
+    todayList.innerHTML = todayOrders.length ? '' : '<div class="empty"><span class="eic">📭</span>Không có khách nào lấy bánh hôm nay</div>';
+    todayOrders.forEach((o,i)=> todayList.appendChild(orderCard(o,i)));
+
+    const weekScroll = document.getElementById('weekScroll');
+    weekScroll.innerHTML = '';
+    for(let i=0;i<7;i++){
+      const d = new Date();
+      d.setDate(d.getDate()+i);
+      const key = toLocalISO(d);
+      const count = active.filter(o=> o.pickupDate === key).length;
+      const chip = document.createElement('div');
+      chip.className = 'day-chip' + (count>0 ? ' has-orders' : '');
+      const label = i===0 ? 'Hôm nay' : fmtDate(key).slice(0,5);
+      chip.innerHTML = `<div class="d">${label}</div><div class="n">${count}</div>`;
+      weekScroll.appendChild(chip);
+    }
+  }
+
+  function orderCard(o, index){
+    const div = document.createElement('div');
+    const today = todayStr();
+    let cls = 'order-item';
+    const isOpen = o.status !== 'Đã giao' && o.status !== 'Đã hủy';
+    if(o.pickupDate === today && isOpen) cls += ' today';
+    if(o.pickupDate < today && isOpen) cls += ' overdue';
+    if(!isOpen) cls += ' done';
+    div.className = cls;
+    div.style.animationDelay = (Math.min(index,8) * 40) + 'ms';
+
+    let diffText = '';
+    if(isOpen){
+      const diff = daysDiff(o.pickupDate);
+      if(diff === 0) diffText = '🔥 Hôm nay';
+      else if(diff > 0) diffText = `Còn ${diff} ngày`;
+      else diffText = `⚠️ Trễ ${Math.abs(diff)} ngày`;
+    }
+
+    div.innerHTML = `
+      <div class="row">
+        <div>
+          <div class="name">${o.name}</div>
+          <div class="code mono">#${o.id}</div>
+        </div>
+        <div class="right-top">
+          <span class="badge ${STATUS_CLASS[o.status]}">${o.status}</span>
+          <button class="more-btn" type="button">•••</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="meta-grid">
+        <div class="meta-item">📞 SĐT<b>${o.phone}</b></div>
+        <div class="meta-item">🎂 Sản phẩm<b>${o.product || 'Không ghi'}</b></div>
+        <div class="meta-item">📅 Ngày lấy<b>${fmtDate(o.pickupDate)}</b></div>
+        <div class="meta-item">⏱ Trạng thái<b class="diff-tag">${diffText || '—'}</b></div>
+      </div>
+    `;
+    div.querySelector('.more-btn').addEventListener('click', ()=> openActionSheet(o));
+    return div;
+  }
+
+  // ---------- DANH SÁCH ĐƠN ----------
+  document.querySelectorAll('#statusPills .pill').forEach(pill=>{
+    pill.addEventListener('click', ()=>{
+      document.querySelectorAll('#statusPills .pill').forEach(p=>p.classList.remove('active'));
+      pill.classList.add('active');
+      currentStatusFilter = pill.dataset.status;
+      renderOrderList();
+    });
+  });
+
+  function renderOrderList(){
+    const container = document.getElementById('orderListContainer');
+    const search = document.getElementById('searchBox').value.toLowerCase().trim();
+    let list = [...orders].sort((a,b)=> a.pickupDate.localeCompare(b.pickupDate));
+    if(search){
+      list = list.filter(o=> o.name.toLowerCase().includes(search) || o.phone.includes(search) || o.id.toLowerCase().includes(search));
+    }
+    if(currentStatusFilter !== 'all'){
+      list = list.filter(o=> o.status === currentStatusFilter);
+    }
+    container.innerHTML = '';
+    if(list.length === 0){
+      container.innerHTML = '<div class="empty"><span class="eic">🔍</span>Không tìm thấy đơn hàng nào</div>';
+      return;
+    }
+    list.forEach((o,i)=> container.appendChild(orderCard(o,i)));
+  }
+  document.getElementById('searchBox').addEventListener('input', renderOrderList);
+
+  // ---------- QUÉT / TRA CỨU MÃ ----------
+  function findOrder(id){
+    if(!id) return null;
+    return orders.find(o=> o.id.toLowerCase() === id.toLowerCase().trim());
+  }
+  function showScanResult(order){
+    const card = document.getElementById('scanResultCard');
+    if(!order){
+      card.innerHTML = '<div class="card notice-banner danger"><span>⚠️</span><span>Không tìm thấy đơn hàng với mã này.</span></div>';
+      return;
+    }
+    card.innerHTML = '';
+    const c = document.createElement('div');
+    c.className = 'card';
+    c.innerHTML = `
+      <div class="card-head"><h3>${order.name}</h3><span class="badge ${STATUS_CLASS[order.status]}">${order.status}</span></div>
+      <div class="meta-grid" style="margin-bottom:10px;">
+        <div class="meta-item">📞 SĐT<b>${order.phone}</b></div>
+        <div class="meta-item">🎂 Sản phẩm<b>${order.product || 'Không ghi'}</b></div>
+        <div class="meta-item">📅 Ngày đặt<b>${fmtDate(order.orderDate)}</b></div>
+        <div class="meta-item">📅 Ngày lấy<b>${fmtDate(order.pickupDate)}</b></div>
+        <div class="meta-item">💰 Giá tiền<b>${fmtMoney(order.price)}</b></div>
+        <div class="meta-item">📝 Ghi chú<b>${order.note || 'Không có'}</b></div>
+      </div>
+    `;
+    const actions = document.createElement('div');
+    actions.style.display = 'flex';
+    actions.style.gap = '8px';
+    if(order.status !== 'Đã giao'){
+      const doneBtn = document.createElement('button');
+      doneBtn.className = 'btn block';
+      doneBtn.textContent = '✅ Đánh dấu Đã giao';
+      doneBtn.addEventListener('click', ()=>{
+        order.status = 'Đã giao';
+        saveOrders();
+        renderDashboard();
+        showScanResult(order);
+      });
+      actions.appendChild(doneBtn);
+    }
+    c.appendChild(actions);
+    card.appendChild(c);
+  }
+
+  function renderRecentChips(){
+    const wrap = document.getElementById('recentOrdersScroll');
+    const active = orders.filter(o=> o.status !== 'Đã giao' && o.status !== 'Đã hủy')
+                          .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0))
+                          .slice(0,6);
+    wrap.innerHTML = '';
+    if(active.length === 0){
+      wrap.innerHTML = '<div class="empty" style="padding:10px;width:100%;">Chưa có đơn nào</div>';
+      return;
+    }
+    active.forEach(o=>{
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'recent-chip';
+      chip.innerHTML = `<span class="rc-name">${o.name}</span><span class="rc-code">${o.id}</span>`;
+      chip.addEventListener('click', ()=>{
+        document.getElementById('manualCode').value = o.id;
+        document.getElementById('clearCodeBtn').classList.add('show');
+        showScanResult(o);
+      });
+      wrap.appendChild(chip);
+    });
+  }
+
+  const manualCodeInput = document.getElementById('manualCode');
+  const clearCodeBtn = document.getElementById('clearCodeBtn');
+  manualCodeInput.addEventListener('input', ()=>{
+    clearCodeBtn.classList.toggle('show', manualCodeInput.value.length > 0);
+  });
+  manualCodeInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){ e.preventDefault(); showScanResult(findOrder(manualCodeInput.value)); }
+  });
+  clearCodeBtn.addEventListener('click', ()=>{
+    manualCodeInput.value = '';
+    clearCodeBtn.classList.remove('show');
+    manualCodeInput.focus();
+  });
+  document.getElementById('manualLookupBtn').addEventListener('click', ()=>{
+    showScanResult(findOrder(manualCodeInput.value));
+  });
+
+  document.getElementById('toggleScanBtn').addEventListener('click', function(){
+    if(!scanning){
+      html5QrCode = new Html5Qrcode("reader");
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 220 },
+        (decodedText)=>{ showScanResult(findOrder(decodedText)); },
+        ()=>{}
+      ).then(()=>{
+        scanning = true;
+        this.textContent = 'Dừng quét';
+      }).catch(err=>{
+        alert('Không thể mở camera: ' + err + '\nBạn có thể nhập mã đơn thủ công bên dưới.');
+      });
+    } else {
+      html5QrCode.stop().then(()=>{
+        html5QrCode.clear();
+        scanning = false;
+        this.textContent = 'Bắt đầu quét';
+      });
+    }
+  });
+
+  // ---------- SAO LƯU / KHÔI PHỤC ----------
+  document.getElementById('exportBtn').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(orders, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'banhchungbac_backup_' + todayStr() + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('importBtn').addEventListener('click', ()=> document.getElementById('importFile').click());
+  document.getElementById('importFile').addEventListener('change', function(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt){
+      try{
+        const data = JSON.parse(evt.target.result);
+        if(Array.isArray(data)){
+          if(confirm('Khôi phục sẽ THAY THẾ toàn bộ dữ liệu hiện tại. Tiếp tục?')){
+            orders = data;
+            saveOrders();
+            renderDashboard();
+            renderOrderList();
+            drawRevenueChart(currentChartPeriod);
+            alert('Khôi phục thành công!');
+          }
+        } else {
+          alert('File không hợp lệ.');
+        }
+      }catch(err){
+        alert('Lỗi đọc file: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  // ---------- KHỞI TẠO ----------
+  renderDashboard();
+  renderOrderList();
+  drawRevenueChart(currentChartPeriod);
+})();
+</script>
+
+<!-- PWA: đăng ký service worker để có thể cài đặt như app -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => console.error('Lỗi đăng ký service worker:', err));
+    });
+  }
+</script>
+</body>
+</html>
